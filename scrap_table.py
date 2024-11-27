@@ -15,8 +15,12 @@ def lambda_handler(event, context):
             'body': 'Error al acceder a la página web'
         }
 
+    print(response.content)
+
     # Parsear el contenido HTML de la página web
     soup = BeautifulSoup(response.content, 'html.parser')
+
+    print(soup)
 
     # Encontrar la tabla en el HTML
     table = soup.find('table')
