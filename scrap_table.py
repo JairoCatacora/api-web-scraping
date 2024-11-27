@@ -5,7 +5,7 @@ import uuid
 
 def lambda_handler(event, context):
     # URL de la página web que contiene la tabla
-    url = "https://ultimosismo.igp.gob.pe/ultimo-sismo/sismos-reportados"
+    url = "https://en.wikipedia.org/wiki/List_of_countries_by_population_(United_Nations)"
 
     # Realizar la solicitud HTTP a la página web
     response = requests.get(url)
@@ -15,7 +15,7 @@ def lambda_handler(event, context):
             'body': 'Error al acceder a la página web'
         }
 
-    print(response.content)
+    print(response.json())
 
     # Parsear el contenido HTML de la página web
     soup = BeautifulSoup(response.content, 'html.parser')
@@ -23,7 +23,7 @@ def lambda_handler(event, context):
     print(soup)
 
     # Encontrar la tabla en el HTML
-    table = soup.find('table')
+    table = soup.find('tbody')
     if not table:
         return {
             'statusCode': 404,
