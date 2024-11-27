@@ -5,7 +5,7 @@ import uuid
 
 def lambda_handler(event, context):
     # URL de la página web que contiene la tabla
-    url = "https://sgonorte.bomberosperu.gob.pe/24horas/?criterio=/"
+    url = "https://ultimosismo.igp.gob.pe/ultimo-sismo/sismos-reportados"
 
     # Realizar la solicitud HTTP a la página web
     response = requests.get(url)
@@ -53,6 +53,8 @@ def lambda_handler(event, context):
     i = 1
     for row in rows:
         row['#'] = i
+        if i == 19:
+            break
         row['id'] = str(uuid.uuid4())  # Generar un ID único para cada entrada
         table.put_item(Item=row)
         i = i + 1
