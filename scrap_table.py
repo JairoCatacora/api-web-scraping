@@ -5,7 +5,7 @@ import uuid
 
 def lambda_handler(event, context):
     # URL de la página web que contiene la tabla
-    url = "https://en.wikipedia.org/wiki/List_of_countries_by_population_(United_Nations)"
+    url = "https://ultimosismo.igp.gob.pe/api/ultimo-sismo/ajaxb/2024"
 
     # Realizar la solicitud HTTP a la página web
     response = requests.get(url)
@@ -15,33 +15,21 @@ def lambda_handler(event, context):
             'body': 'Error al acceder a la página web'
         }
 
-    print(response.json())
-
     # Parsear el contenido HTML de la página web
-    soup = BeautifulSoup(response.content, 'html.parser')
+    data = response.json()
 
-    print(soup)
+    print(data)
 
     # Encontrar la tabla en el HTML
-    table = soup.find('tbody')
-    if not table:
-        return {
-            'statusCode': 404,
-            'body': 'No se encontró la tabla en la página web'
-        }
+    l_sismos = sorted(data, key=lambda sis: sis['createdAt'], reverse=True)
 
-    # Extraer los encabezados de la tabla
-    headers = [header.text for header in table.find_all('th')]
+    res = l_sismos[:10]    
 
-    # Extraer las filas de la tabla
-    rows = []
-    for row in table.find_all('tr')[1:]:  # Omitir el encabezado
-        cells = row.find_all('td')
-        rows.append({headers[i+1]: cell.text for i, cell in enumerate(cells)})
+    print(res)
 
     # Guardar los datos en DynamoDB
     dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table('TablaWebScrapping')
+    table = dynamodb.Table('TablaWebScrapping-IGP')
 
     # Eliminar todos los elementos de la tabla antes de agregar los nuevos
     scan = table.scan()
@@ -53,18 +41,15 @@ def lambda_handler(event, context):
                 }
             )
 
-    # Insertar los nuevos datos
-    i = 1
-    for row in rows:
-        row['#'] = i
-        if i == 19:
-            break
-        row['id'] = str(uuid.uuid4())  # Generar un ID único para cada entrada
-        table.put_item(Item=row)
-        i = i + 1
+    
+    for i,sismo in range(len(res)):
+        sismo['num'] = i
+        sismo['id'] = str(uuid.uuid4())
+        table.put_item(Item=sismo)
+
 
     # Retornar el resultado como JSON
     return {
         'statusCode': 200,
-        'body': rows
+        'body': res
     }
