@@ -42,7 +42,7 @@ def lambda_handler(event, context):
             )
 
     
-    for i,sismo in range(len(res)):
+    for i,sismo in enumerate(res, start=1):
         sismo['num'] = i
         sismo['id'] = str(uuid.uuid4())
         table.put_item(Item=sismo)
